@@ -1,0 +1,20 @@
+f = "your file path"
+with open(f, "r") as file:
+   content = file.read()
+   characters = list(content)
+   character_count = {}
+   for char in characters:
+      if char in character_count:
+          character_count[char] += 1
+      else:
+          character_count[char] = 1
+print("Character count:", character_count)
+file_extension = f.split(".")[-1]
+if file_extension == "txt":
+    print("\n\nIt is a text file.")
+elif file_extension == "cpp":
+    print("\n\nIt is a C++ file.")
+elif file_extension == "c":
+    print("\n\nIt is a C file.")
+else:
+    print("\n\nIt has an unknown file extension.")
