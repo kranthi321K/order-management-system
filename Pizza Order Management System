@@ -1,1 +1,150 @@
 print("******WELCOME TO PIZZA WITH PEERS********")
+import pandas as pd
+
+# Define the pizza menu as a DataFrame
+Input_vegdata={
+    'Pizza ID': ['P10001','P10002','P10003','P10004','P10005','P10006','P10007'],
+    'Pizza Name': ['Margherita', 'Vegetable Supreme','Panner Tikka','Farmhouse','Spinach and Ricotta','Pesto veg','Cheese and Tomato'],
+    'Large Price':[699.00,499.00,459.00,599.00,559.00,699.00,659.00],
+    'Medium Price':[499.00,299.00,259.00,399.00,359.00,499.00,459.00],
+    'Small Price':[299.00,99.00,59.00,199.00,159.00,299.00,259.00],
+    'category':['veg','veg','veg','veg','veg','veg','veg']
+}
+Input_nonvegdata={
+    'Pizza ID': ['P20001','P20002','P20003','P20004','P20005','P20006','P20007'],
+    'Pizza Name': ['Pepperoi','Chicken Supreme','Chicken Tikka','Meat Lovers','BBQ Chicken','Seafood','Sausage and Mushroom'],
+    'Large Price':[699.00,499.00,459.00,599.00,559.00,699.00,659.00],
+    'Medium Price':[499.00,299.00,259.00,399.00,359.00,499.00,459.00],
+    'Small Price':[299.00,99.00,59.00,199.00,159.00,299.00,259.00],
+    'category':['non-veg','non-veg','non-veg','non-veg','non-veg','non-veg','non-veg']
+}
+
+veg_data=pd.DataFrame(Input_vegdata)
+nonveg_data=pd.DataFrame(Input_nonvegdata)
+menu_data=pd.concat([veg_data,nonveg_data])
+# Add-ons prices
+add_ons = {
+    'Extra Cheese': 15.00,
+    'Extra Toppings': 20.00,
+    'Takeaway': 15.00
+}
+
+# Display the pizza menu
+def view_menu():
+    print("\n\t\tPizza Menu:")
+    print(menu_data.to_string(header=True, index=False))
+
+
+# Print the receipt
+def print_receipt(order):
+    if order:
+        print("\n--- Receipt ---")
+        print(f"Pizza: {order['Pizza Name']}")
+        print(f"Size:{order['Size']}")
+        if order['Add-ons']:
+            print(f"Add-ons: {', '.join(order['Add-ons'])}")
+        else:
+            print("Add-ons: None")
+        print(f"Total Price: ${order['Total Price']}")
+    else:
+        print("No valid order placed.")
+
+# Place an order
+def place_order():
+    view_menu()
+    Z='y'
+    while Z=='y':
+        pizza_id=input("\nEnter the Pizza ID you want to order: ")
+        size=input("\nEnter the size of pizza you want to order(large/medium/small):")
+    
+    # Validate pizza ID
+        if pizza_id not in menu_data['Pizza ID'].values:
+            print("Invalid Pizza ID!")
+            return None
+        total_base_price=0 
+        pizza = menu_data.loc[menu_data['Pizza ID'] == pizza_id].iloc[0]
+        pizza_name = pizza['Pizza Name']
+        large_price = pizza['Large Price']
+        medium_price = pizza['Medium Price']
+        small_price = pizza['Small Price']
+        if size.lower()=='large':
+            total_base_price+=large_price
+        elif size.lower()=='medium':
+            total_base_price+=medium_price
+        elif size.lower()=='small':
+            total_base_price+=small_price
+        print(f"\nYou selected: {pizza_name}")
+        print(f"pizza_Price: ${total_base_price}")
+
+    # Select add-ons
+        selected_addons = []
+        total_addon_price = 0
+
+        for addon, price in add_ons.items():
+            add = input(f"Do you want {addon} ($ {price})? (yes/no): ").lower()
+            if add == 'yes':
+                selected_addons.append(addon)
+                total_addon_price += price
+
+        total_price = total_base_price + total_addon_price
+        order={
+           'Pizza Name': pizza_name,
+           'Size':size,
+           'Add-ons': selected_addons,
+           'Total Price': total_price}
+        Z=input("Do you want to order another one(yes/no):")
+        print_receipt(order)
+        return {
+           'Pizza Name': pizza_name,
+           'Size':size,
+           'Add-ons': selected_addons,
+           'Total Price': total_price}
+
+# Save orders in DataFrame and show order summary
+def save_order_summary(order, orders_df):
+    if order:
+        new_order = pd.DataFrame([{
+            'Pizza Name': order['Pizza Name'],
+            'Size':order['Size'],
+            'Add-ons': ', '.join(order['Add-ons']) if order['Add-ons'] else 'None',
+            'Total Price': order['Total Price']
+        }])
+        orders_df = pd.merge(orders_df, new_order, how='outer')
+        return orders_df
+    return orders_df
+
+# Show all orders summary
+def show_order_summary(orders_df):
+    if not orders_df.empty:
+        print("\n--- Order Summary ---")
+        print(orders_df)
+    else:
+        print("No orders placed yet.")
+
+# Main function to run the system
+def main():
+    orders_df = pd.DataFrame(columns=['Pizza Name', 'Size', 'Add-ons', 'Total Price'])
+    
+    while True:
+        print("\n--- Pizza Order Management System ---")
+        print("1. View Menu")
+        print("2. Place Order")
+        print("3. Show Order Summary")
+        print("4. Exit")
+        
+        choice = input("Enter your choice: ")
+        
+        if choice == '1':
+            view_menu()
+        elif choice == '2':
+            order = place_order()
+            orders_df = save_order_summary(order, orders_df)
+        elif choice == '3':
+            show_order_summary(orders_df)
+        elif choice == '4':
+            print("Exiting Pizza Order Management System. Thank you!")
+            break
+        else:
+            print("Invalid choice! Please try again.")
+
+main()
